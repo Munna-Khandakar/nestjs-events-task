@@ -3,7 +3,6 @@ import { CreateUserDto } from './dto/createuser.dto';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { UserCreatedEvent } from './events/user-created.event';
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
-import setTimeout = jest.setTimeout;
 
 @Injectable()
 export class AppService {
@@ -21,6 +20,19 @@ export class AppService {
       'user.created',
       new UserCreatedEvent(userId, body.email),
     );
+
+    const establishWsTimeout = setTimeout(() => {
+      this.establishWsConnection(userId);
+    }, 800);
+
+    this.schedulerRegistry.addTimeout(
+      `${userId}_establish_ws`,
+      establishWsTimeout,
+    );
+  }
+
+  private establishWsConnection(userId: string) {
+    console.log('Establishing ES connection...', userId);
   }
 
   @OnEvent('user.created')
